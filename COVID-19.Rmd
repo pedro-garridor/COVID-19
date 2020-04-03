@@ -1,5 +1,5 @@
 ---
-title: "Evolución COVID-19 en España"
+title: "Evolución del COVID-19 en España"
 author: "Pedro Garrido Rodríguez"
 date: "`r format(Sys.time(), '%d de %B de %Y')`"
 output:
@@ -19,7 +19,7 @@ library(ggplot2); library(reshape2)
 
 # Obtención de los datos
 
-Para analizar la evolución del COVID-19 en España se obtiene información sobre casos positivos, hospitalizados, fallecidos y altas hospitalarias. Son datos diarios, agregados y desglosados por comunidad autónoma. Estos datos se obtienen del [GitHub de datadista](https://github.com/datadista/datasets/tree/master/COVID%2019) y proceden de los informes oficiales del [Ministerio de Sanidad](https://www.mscbs.gob.es/profesionales/saludPublica/ccayes/alertasActual/nCov-China/situacionActual.htm) y el [Instituto de Salud Carlos III](https://covid19.isciii.es/).
+Para analizar la evolución del SARS-CoV-2 en España se obtiene información sobre casos positivos, hospitalizados, fallecidos y altas hospitalarias. Son datos diarios, agregados y desglosados por comunidad autónoma. Estos datos se obtienen del [GitHub de datadista](https://github.com/datadista/datasets/tree/master/COVID%2019) y proceden de los informes oficiales del [Ministerio de Sanidad](https://www.mscbs.gob.es/profesionales/saludPublica/ccayes/alertasActual/nCov-China/situacionActual.htm) y el [Instituto de Salud Carlos III](https://covid19.isciii.es/).
 
 ```{r Crear un directorio para almacenar los ficheros de datos}
 if(dir.exists("Datos") == F) {
@@ -46,9 +46,8 @@ cd ..
 ```
 
 ```{r Introduccir los datos en R}
-# Se elinima la primera columna porque contiene el código de provincia y no es necesario
-
 casos <- read.csv("./Datos/ccaa_covid19_casos.csv", check.names = F)
+# Se elimina la primera columna porque contiene el código de provincia y no es necesario
 casos <- casos[,2:ncol(casos)]
 
 hospitalizados <- read.csv("./Datos/ccaa_covid19_hospitalizados.csv", check.names = F)
@@ -62,6 +61,8 @@ altas <- altas[,2:ncol(altas)]
 ```
 
 # Procesamiento de los datos
+
+Para poder manejar los datos obtenidos se realizan una serie de transformaciones estructurales sobre los *datasets*.
 
 1. Apilar los datos para facilitar su manejo.
 
@@ -79,16 +80,32 @@ altas.stacked <- melt(altas, id.vars = c("CCAA"))
 names(altas.stacked) <- c("CCAA", "Fecha", "Altas")
 ```
 
-2. Crear un dataset único con los datos conjuntos.
+2. Crear un *dataset* único con los datos conjuntos.
 
-```{r Crear dataframe único, message=F}
-library(dplyr)
-df <- left_join(casos.stacked, fallecidos.stacked)
-df <-  left_join(df, altas.stacked)
-df <- left_join(df, hospitalizados.stacked)
+```{r Crear dataframe único}
+df <- data.frame(
+  "Fecha" = casos.stacked$Fecha,
+  "CCAA" = casos.stacked$CCAA,
+  "Casos" = casos.stacked$Casos,
+  "Fallecidos" = c(rep(0, (nrow(casos.stacked) - nrow(fallecidos.stacked))), fallecidos.stacked$Fallecidos),
+  "Hospitalizados" = c(rep(0, (nrow(casos.stacked) - nrow(hospitalizados.stacked))), hospitalizados.stacked$Hospitalizados),
+  "Altas" = c(rep(0, (nrow(casos.stacked) - nrow(altas.stacked))), altas.stacked$Altas)
+)
 ```
 
-3. Crear datasets auxiliares para las representaciones.
+3. Crear *datasets* para el Estado y la CARM.
+
+```{r Crear datasets para el Estado y la CARM}
+df.total <- subset(df, CCAA == "Total")
+df.total <- df.total[,c(1, 3:6)]
+df.total.stacked <- melt(df.total, id.vars = "Fecha")
+
+df.CARM <- subset(df, CCAA == "Murcia")
+df.CARM <- df.CARM[,c(1, 3:6)]
+df.CARM.stacked <- melt(df.CARM, id.vars = "Fecha")
+```
+
+4. Crear *datasets* auxiliares para las representaciones de barras. Estos *datasets* no incluyen el total, ya que la propia representación lo calcula por suma de las CCAA.
 
 ```{r Crear datasets auxiliares}
 casos.stacked.aux <- subset(casos.stacked, CCAA != "Total")
@@ -97,52 +114,94 @@ fallecidos.stacked.aux <- subset(fallecidos.stacked, CCAA != "Total")
 altas.stacked.aux <- subset(altas.stacked, CCAA != "Total")
 ```
 
-4. Crear datasets para el Estado y la CARM.
-
-```{r Crear datasets para el Estado y la CARM}
-df.total <- subset(df, CCAA == "Total")
-df.total <- df.total[,2:ncol(df.total)]
-df.total.stacked <- melt(df.total, id.vars = "Fecha")
-
-df.CARM <- subset(df, CCAA == "Murcia")
-df.CARM <- df.CARM[,2:ncol(df.CARM)]
-df.CARM.stacked <- melt(df.CARM, id.vars = "Fecha")
-```
 
 5. Cálculo de velocidades de crecimiento diario de nuevos casos.
 
 ```{r Calcular velocidades}
-velocidades.ESP <- rep(0, nrow(df.total))
+# Velocidades en el conjunto del Estado
+velocidades.casos.ESP <- rep(0, nrow(df.total))
 for (i in 2:nrow(df.total)) {
-  velocidades.ESP[i] = df.total$Casos[i] - df.total$Casos[i - 1]
+  velocidades.casos.ESP[i] = df.total$Casos[i] - df.total$Casos[i - 1]
 }
 
-velocidades.CARM <- rep(0, nrow(df.total))
-velocidades.CARM <- rep(0, nrow(df.total))
+velocidades.fallecidos.ESP <- rep(0, nrow(df.total))
+for (i in 2:nrow(df.total)) {
+  velocidades.fallecidos.ESP[i] = df.total$Fallecidos[i] - df.total$Fallecidos[i - 1]
+}
+
+velocidades.hospitalizados.ESP <- rep(0, nrow(df.total))
+for (i in 2:nrow(df.total)) {
+  velocidades.hospitalizados.ESP[i] = 
+    df.total$Hospitalizados[i] - df.total$Hospitalizados[i - 1]
+}
+
+velocidades.altas.ESP <- rep(0, nrow(df.total))
+for (i in 2:nrow(df.total)) {
+  velocidades.altas.ESP[i] = df.total$Altas[i] - df.total$Altas[i - 1]
+}
+
+velocidades.ESP <- data.frame(
+  "Fecha" = as.vector(df.total$Fecha),
+  "Positivos" = velocidades.casos.ESP,
+  "Fallecidos" = velocidades.fallecidos.ESP,
+  "Hospitalizados" = velocidades.hospitalizados.ESP,  
+  "Altas" = velocidades.altas.ESP
+)
+
+# Velocidades en la CARM
+velocidades.casos.CARM <- rep(0, nrow(df.CARM))
 for (i in 2:nrow(df.CARM)) {
-  velocidades.CARM[i] = df.CARM$Casos[i] - df.CARM$Casos[i - 1]
+  velocidades.casos.CARM[i] = df.CARM$Casos[i] - df.CARM$Casos[i - 1]
 }
 
-velocidad <- data.frame(
-  "Fecha" = df.total$Fecha,
-  "España" = velocidades.ESP,
-  "Murcia" = velocidades.CARM
+velocidades.fallecidos.CARM <- rep(0, nrow(df.CARM))
+for (i in 2:nrow(df.CARM)) {
+  velocidades.fallecidos.CARM[i] = df.CARM$Fallecidos[i] - df.CARM$Fallecidos[i - 1]
+}
+
+velocidades.hospitalizados.CARM <- rep(0, nrow(df.CARM))
+for (i in 2:nrow(df.CARM)) {
+  velocidades.hospitalizados.CARM[i] = 
+    df.CARM$Hospitalizados[i] - df.CARM$Hospitalizados[i - 1]
+}
+
+velocidades.altas.CARM <- rep(0, nrow(df.CARM))
+for (i in 2:nrow(df.CARM)) {
+  velocidades.altas.CARM[i] = df.CARM$Altas[i] - df.CARM$Altas[i - 1]
+}
+
+velocidades.CARM <- data.frame(
+  "Fecha" = as.vector(df.CARM$Fecha),
+  "Positivos" = velocidades.casos.CARM,
+  "Fallecidos" = velocidades.fallecidos.CARM,
+  "Hospitalizados" = velocidades.hospitalizados.CARM,  
+  "Altas" = velocidades.altas.CARM
 )
 
-velocidad.CARM <- data.frame(
-  "Fecha" = df.CARM$Fecha,
-  "Velocidad" = velocidades.CARM
-)
-
-velocidad.stacked <- melt(velocidad, id.vars = "Fecha")
+# Crear datasets apilados para facilitar su tratamiento
+velocidades.ESP.stacked <- melt(velocidades.ESP, id.vars = "Fecha")
+velocidades.CARM.stacked <- melt(velocidades.CARM, id.vars = "Fecha")
 ```
 
-# Representaciones
+# Gráficos
 
-## Gráficos acumulados
+Se van a generar gráficos de la evolución global del virus a nivel del Estado y de la Región de Murcia. Asimismo, se obtendrán representaciones sobre la evolución de la pandemia en el Estado desglosada por factor, esto es:
 
-### Código
-```{r Generación de gráficos, warning=F}
+* número de positivos
+
+* Número de hospitalizados
+
+* Número de fallecidos 
+
+* Número de altas hospitalarias.
+
+## Código
+
+### Datos acumulados
+
+#### Gráficos globales
+
+```{r Gráficos globales}
 global.ESP <- ggplot(df.total.stacked, aes(x = Fecha)) +
   geom_bar(aes(y = value, fill = variable), stat = "identity", position = "dodge2") + 
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
@@ -150,7 +209,23 @@ global.ESP <- ggplot(df.total.stacked, aes(x = Fecha)) +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en España", 
        subtitle = "Datos agregados", 
-       x = "Fecha", y = "Casos")
+       x = "Fecha", y = "Número de pacientes")
+
+global.raw <- ggplot(df.total.stacked, aes(x = Fecha, y = value, group = variable, color = variable)) +
+  geom_line() + geom_point() +
+  geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
+  geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
+  labs(title = "Evolución del COVID-19 en España", 
+       x = "Fecha", y = "Número de pacientes")
+
+global.suavizado <- ggplot(df.total.stacked, aes(x = Fecha, y = value, group = variable, color = variable)) +
+  geom_smooth(alpha = 0.1) +
+  geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
+  geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
+  labs(title = "Evolución del COVID-19 en España", 
+       x = "Fecha", y = "Número de pacientes")
 
 global.CARM <- ggplot(df.CARM.stacked, aes(x = Fecha)) +
   geom_bar(aes(y = value, fill = variable), stat = "identity", position = "dodge2") + 
@@ -159,43 +234,28 @@ global.CARM <- ggplot(df.CARM.stacked, aes(x = Fecha)) +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en la Región de Murcia", 
        subtitle = "Datos agregados", 
-       x = "Fecha", y = "Casos")
+       x = "Fecha", y = "Número de pacientes")
 
-casos.bar <- ggplot(casos.stacked.aux, aes(x = Fecha)) +
-  geom_bar(aes(y = Casos, fill = CCAA), color = "black", stat = "identity") + 
+CARM.raw <- ggplot(df.CARM.stacked, aes(x = Fecha, y = value, group = variable, color = variable)) +
+  geom_line() + geom_point() +
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
-  labs(title = "Evolución del COVID-19 en España por CCAA", 
-       subtitle = "Número de casos agregados", 
-       x = "Fecha", y = "Positivos")
+  labs(title = "Evolución del COVID-19 en la Región de Murcia", 
+       x = "Fecha", y = "Número de pacientes")
 
-hospitalizados.bar <- ggplot(hospitalizados.stacked.aux, aes(x = Fecha)) +
-  geom_bar(aes(y = Hospitalizados, fill = CCAA), color = "black", stat = "identity") + 
-  geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
-  theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
-  labs(title = "Evolución del COVID-19 en España por CCAA", 
-       subtitle = "Número de hospitalizados agregados", 
-       x = "Fecha", y = "Hospitalizados")
-
-fallecidos.bar <- ggplot(fallecidos.stacked.aux, aes(x = Fecha)) +
-  geom_bar(aes(y = Fallecidos, fill = CCAA), color = "black", stat = "identity") + 
+CARM.suavizado <- ggplot(df.CARM.stacked, aes(x = Fecha, y = value, group = variable, color = variable)) +
+  geom_smooth(alpha = 0.1) +
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
-  labs(title = "Evolución del COVID-19 en España por CCAA", 
-       subtitle = "Número de fallecidos agregados", 
-       x = "Fecha", y = "Fallecidos")
+  labs(title = "Evolución del COVID-19 en la Región de Murcia", 
+       x = "Fecha", y = "Número de pacientes")
+```
 
-altas.bar <- ggplot(altas.stacked.aux, aes(x = Fecha)) +
-  geom_bar(aes(y = Altas, fill = CCAA), color = "black", stat = "identity") + 
-  geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
-  geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
-  theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
-  labs(title = "Evolución del COVID-19 en España por CCAA", 
-       subtitle = "Número de altas hospitalarias agregadas", 
-       x = "Fecha", y = "Altas hospitalarias")
+#### Gráficos de líneas
 
+```{r Gráficos de líneas}
 casos.line <- ggplot(casos.stacked, aes(x = Fecha, y = Casos, group = CCAA, color = CCAA)) +
   geom_line() + geom_point() +
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
@@ -234,52 +294,156 @@ altas.line <- ggplot(altas.stacked, aes(x = Fecha, y = Altas, group = CCAA, colo
        x = "Fecha", y = "Altas hospitalarias")
 ```
 
-### Representaciones
+#### Gráficos de barras
 
-```{r Representaciones, warning=F}
-global.ESP; global.CARM
-casos.line; casos.bar
-hospitalizados.line; hospitalizados.bar
-fallecidos.line; fallecidos.bar
-altas.line; altas.bar
+```{r Gráficos de barras}
+casos.bar <- ggplot(casos.stacked.aux, aes(x = Fecha)) +
+  geom_bar(aes(y = Casos, fill = CCAA), color = "black", stat = "identity") + 
+  geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
+  geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
+  labs(title = "Evolución del COVID-19 en España por CCAA", 
+       subtitle = "Número de casos agregados", 
+       x = "Fecha", y = "Positivos")
+
+hospitalizados.bar <- ggplot(hospitalizados.stacked.aux, aes(x = Fecha)) +
+  geom_bar(aes(y = Hospitalizados, fill = CCAA), color = "black", stat = "identity") + 
+  geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
+  labs(title = "Evolución del COVID-19 en España por CCAA", 
+       subtitle = "Número de hospitalizados agregados", 
+       x = "Fecha", y = "Hospitalizados")
+
+fallecidos.bar <- ggplot(fallecidos.stacked.aux, aes(x = Fecha)) +
+  geom_bar(aes(y = Fallecidos, fill = CCAA), color = "black", stat = "identity") + 
+  geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
+  geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
+  labs(title = "Evolución del COVID-19 en España por CCAA", 
+       subtitle = "Número de fallecidos agregados", 
+       x = "Fecha", y = "Fallecidos")
+
+altas.bar <- ggplot(altas.stacked.aux, aes(x = Fecha)) +
+  geom_bar(aes(y = Altas, fill = CCAA), color = "black", stat = "identity") + 
+  geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
+  geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
+  labs(title = "Evolución del COVID-19 en España por CCAA", 
+       subtitle = "Número de altas hospitalarias agregadas", 
+       x = "Fecha", y = "Altas hospitalarias")
 ```
 
-## Velocidades de expansión
+### Velocidades de evolución
 
 ```{r Gráficos de velocidad}
-vel.plot <- ggplot(velocidad.stacked, aes(x = Fecha, y = value, group = variable, color = variable)) +
-  geom_line() + geom_point() +
+vel.plot.raw <- ggplot(velocidades.ESP.stacked, aes(x = Fecha, y = value, group = variable, color = variable)) +
+  geom_line() +
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en España",
        subtitle = "Velocidad de expansión",
-       x = "Fecha", y = "Casos nuevos / día"
+       x = "Fecha", y = "Casos / día"
        )
 
-vel.plot.CARM <- ggplot(velocidad.CARM, aes(x = Fecha, y = Velocidad, group = 1, color = "red")) +
-  geom_line() + geom_point() +
+vel.plot.suavizado <- ggplot(velocidades.ESP.stacked, aes(x = Fecha, y = value, group = variable, color = variable)) +
+  geom_smooth(alpha = 0.1) +
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
-  theme(axis.text.x = element_text(angle = 90)) +
-  guides(color = F) +
-  labs(title = "Evolución del COVID-19 en la Región de Murcia",
+  theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
+  labs(title = "Evolución del COVID-19 en España",
        subtitle = "Velocidad de expansión",
-       x = "Fecha", y = "Casos nuevos / día"
+       x = "Fecha", y = "Casos / día"
        )
 
-vel.plot
-vel.plot.CARM
+vel.plot.CARM.raw <- ggplot(velocidades.CARM.stacked, aes(x = Fecha, y = value, group = variable, color = variable)) +
+  geom_line() +
+  geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
+  geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
+  labs(title = "Evolución del COVID-19 en la Región de Murcia",
+       subtitle = "Velocidad de expansión",
+       x = "Fecha", y = "Casos / día"
+       )
+
+vel.plot.CARM.suavizado <- ggplot(velocidades.CARM.stacked, aes(x = Fecha, y = value, group = variable, color = variable)) +
+  geom_smooth(alpha = 0.1) +
+  geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
+  geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
+  labs(title = "Evolución del COVID-19 en la Región de Murcia",
+       subtitle = "Velocidad de expansión",
+       x = "Fecha", y = "Casos / día"
+       )
 ```
 
-## Exportación de los gráficos generados
+## Representaciones
+
+### Evolución global
+
+```{r Representaciones globales, message=F}
+global.ESP; global.raw; global.suavizado;
+global.CARM; CARM.raw; CARM.suavizado
+```
+
+### Evolución desglosada
+
+#### Positivos
+
+```{r Representaciones positivos}
+casos.line; casos.bar
+```
+
+#### Hospitalizados
+
+```{r Representaciones hospitalizados}
+hospitalizados.line; hospitalizados.bar
+```
+
+#### Fallecidos
+
+```{r Representaciones fallecidos}
+fallecidos.line; fallecidos.bar
+```
+
+#### Altas
+
+```{r Representaciones altas}
+altas.line; altas.bar
+```
+
+### Velocidad
+
+```{r Representaciones velocidad, message=F}
+vel.plot.raw; vel.plot.suavizado
+vel.plot.CARM.raw; vel.plot.CARM.suavizado
+```
+
+## Exportación
 
 Los gráficos presentados anteriormente se exportan a la carpeta `Graficas` a una resolución de 1920x1080 px.
 
-```{r Guardar gráficos, warning=F}
+```{r Guardar gráficos, message=F}
 if (dir.exists("Graficas") == F) {
   dir.create("Graficas")
 }
+
+# Gráficos globales
+ggsave("global_raw.png", 
+       plot = global.raw,
+       path = "./Graficas",
+       width = 50.8, 
+       height = 28.58, 
+       units = 'cm', 
+       dpi = 300)
+
+ggsave("global_smooth.png", 
+       plot = global.suavizado,
+       path = "./Graficas",
+       width = 50.8, 
+       height = 28.58, 
+       units = 'cm', 
+       dpi = 300)
 
 ggsave("global_ESP.png", 
        plot = global.ESP,
@@ -297,6 +461,9 @@ ggsave("global_CARM.png",
        units = 'cm', 
        dpi = 300)
 
+# Evolución desglosada por factor
+
+## Barplots
 ggsave("casos_bar.png", 
        plot = casos.bar,
        path = "./Graficas",
@@ -329,6 +496,7 @@ ggsave("altas_bar.png",
        units = 'cm', 
        dpi = 300)
 
+## Lineplots
 ggsave("casos_line.png", 
        plot = casos.line,
        path = "./Graficas",
@@ -361,16 +529,33 @@ ggsave("altas_line.png",
        units = 'cm', 
        dpi = 300)
 
-ggsave("velocidad.png", 
-       plot = vel.plot,
+# Plots de velocidad
+ggsave("velocidad_raw.png", 
+       plot = vel.plot.raw,
        path = "./Graficas",
        width = 50.8, 
        height = 28.58, 
        units = 'cm', 
        dpi = 300)
 
-ggsave("velocidad_CARM.png", 
-       plot = vel.plot.CARM,
+ggsave("velocidad_smooth.png", 
+       plot = vel.plot.suavizado,
+       path = "./Graficas",
+       width = 50.8, 
+       height = 28.58, 
+       units = 'cm', 
+       dpi = 300)
+
+ggsave("velocidad_CARM_raw.png", 
+       plot = vel.plot.CARM.raw,
+       path = "./Graficas",
+       width = 50.8, 
+       height = 28.58, 
+       units = 'cm', 
+       dpi = 300)
+
+ggsave("velocidad_CARM_smooth.png", 
+       plot = vel.plot.CARM.suavizado,
        path = "./Graficas",
        width = 50.8, 
        height = 28.58, 
