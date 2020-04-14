@@ -8,6 +8,7 @@ Hence, Rmd knitting gives the following items:
 * *Datos* folder: data files are downloaded here. These CSV files are gathered from [Datadista's GitHub](https://github.com/datadista/datasets/tree/master/COVID%2019), with information publised by the [Spanish Ministry of Health](https://www.mscbs.gob.es/profesionales/saludPublica/ccayes/alertasActual/nCov-China/situacionActual.htm) and [Carlos III Health Institute](https://covid19.isciii.es/).
 * *Graficas* folder: graphs from the HTML are exported to this folder, with 1920x1080 px resolution.
 
+> Global hospitalized data is no longer avaible as it was inconsistent. Some regions gave cumulative data while others were giving daily new cases.
 
 ---
 
@@ -18,3 +19,5 @@ Así, la ejecución de este Rmd genera los siguientes elementos:
 * Fichero *COVID-19.html*: en este archivo se puede visualizar la metodología y el código empleados en el proceso.
 * Carpeta *Datos*: aquí se descargan los ficheros de datos actualizados en formato CSV desde el [Github de Datadista](https://github.com/datadista/datasets/tree/master/COVID%2019), con la información publicada por el [Ministerio de Sanidad](https://www.mscbs.gob.es/profesionales/saludPublica/ccayes/alertasActual/nCov-China/situacionActual.htm) y el [Instituto de Salud Carlos III](https://covid19.isciii.es/).
 * *Graficas*: las gráficas del fichero HTML se exportan también a esta carpeta, con una resoluión de 1920x1080 px.
+
+> El dato de hospitalizados totales ya no está disponible al detectarse que algunas comunidades estaban dando datos acumulados, mientras otras informaban de nuevos casos diarios.
