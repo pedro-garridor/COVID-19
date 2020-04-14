@@ -206,6 +206,7 @@ global.ESP <- ggplot(df.total.stacked, aes(x = Fecha)) +
   geom_bar(aes(y = value, fill = variable), stat = "identity", position = "dodge2") + 
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en España", 
        subtitle = "Datos agregados", 
@@ -215,6 +216,7 @@ global.raw <- ggplot(df.total.stacked, aes(x = Fecha, y = value, group = variabl
   geom_line() + geom_point() +
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en España", 
        x = "Fecha", y = "Número de pacientes")
@@ -223,6 +225,7 @@ global.suavizado <- ggplot(df.total.stacked, aes(x = Fecha, y = value, group = v
   geom_smooth(alpha = 0.1) +
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en España", 
        x = "Fecha", y = "Número de pacientes")
@@ -231,6 +234,7 @@ global.CARM <- ggplot(df.CARM.stacked, aes(x = Fecha)) +
   geom_bar(aes(y = value, fill = variable), stat = "identity", position = "dodge2") + 
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en la Región de Murcia", 
        subtitle = "Datos agregados", 
@@ -240,6 +244,7 @@ CARM.raw <- ggplot(df.CARM.stacked, aes(x = Fecha, y = value, group = variable, 
   geom_line() + geom_point() +
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en la Región de Murcia", 
        x = "Fecha", y = "Número de pacientes")
@@ -248,6 +253,7 @@ CARM.suavizado <- ggplot(df.CARM.stacked, aes(x = Fecha, y = value, group = vari
   geom_smooth(alpha = 0.1) +
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en la Región de Murcia", 
        x = "Fecha", y = "Número de pacientes")
@@ -260,6 +266,7 @@ casos.line <- ggplot(casos.stacked, aes(x = Fecha, y = Casos, group = CCAA, colo
   geom_line() + geom_point() +
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en España por CCAA", 
        subtitle = "Número de casos agregados", 
@@ -269,6 +276,7 @@ hospitalizados.line <- ggplot(hospitalizados.stacked,
                               aes(x = Fecha, y = Hospitalizados, group = CCAA, color = CCAA)) +
   geom_line() + geom_point() +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en España por CCAA", 
        subtitle = "Número de hospitalizados agregados", 
@@ -279,6 +287,7 @@ fallecidos.line<- ggplot(fallecidos.stacked,
   geom_line() + geom_point() +
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90)) +
   labs(title = "Evolución del COVID-19 en España por CCAA", 
        subtitle = "Número de fallecidos agregados", 
@@ -288,6 +297,7 @@ altas.line <- ggplot(altas.stacked, aes(x = Fecha, y = Altas, group = CCAA, colo
   geom_line() + geom_point() +
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en España por CCAA", 
        subtitle = "Número de altas hospitalarias agregadas", 
@@ -301,6 +311,7 @@ casos.bar <- ggplot(casos.stacked.aux, aes(x = Fecha)) +
   geom_bar(aes(y = Casos, fill = CCAA), color = "black", stat = "identity") + 
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en España por CCAA", 
        subtitle = "Número de casos agregados", 
@@ -309,6 +320,7 @@ casos.bar <- ggplot(casos.stacked.aux, aes(x = Fecha)) +
 hospitalizados.bar <- ggplot(hospitalizados.stacked.aux, aes(x = Fecha)) +
   geom_bar(aes(y = Hospitalizados, fill = CCAA), color = "black", stat = "identity") + 
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en España por CCAA", 
        subtitle = "Número de hospitalizados agregados", 
@@ -318,6 +330,7 @@ fallecidos.bar <- ggplot(fallecidos.stacked.aux, aes(x = Fecha)) +
   geom_bar(aes(y = Fallecidos, fill = CCAA), color = "black", stat = "identity") + 
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en España por CCAA", 
        subtitle = "Número de fallecidos agregados", 
@@ -327,6 +340,7 @@ altas.bar <- ggplot(altas.stacked.aux, aes(x = Fecha)) +
   geom_bar(aes(y = Altas, fill = CCAA), color = "black", stat = "identity") + 
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en España por CCAA", 
        subtitle = "Número de altas hospitalarias agregadas", 
@@ -340,6 +354,7 @@ vel.plot.raw <- ggplot(velocidades.ESP.stacked, aes(x = Fecha, y = value, group 
   geom_line() +
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en España",
        subtitle = "Velocidad de expansión",
@@ -350,6 +365,7 @@ vel.plot.suavizado <- ggplot(velocidades.ESP.stacked, aes(x = Fecha, y = value, 
   geom_smooth(alpha = 0.1) +
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en España",
        subtitle = "Velocidad de expansión",
@@ -360,6 +376,7 @@ vel.plot.CARM.raw <- ggplot(velocidades.CARM.stacked, aes(x = Fecha, y = value, 
   geom_line() +
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en la Región de Murcia",
        subtitle = "Velocidad de expansión",
@@ -370,6 +387,7 @@ vel.plot.CARM.suavizado <- ggplot(velocidades.CARM.stacked, aes(x = Fecha, y = v
   geom_smooth(alpha = 0.1) +
   geom_vline(xintercept = "2020-03-14", linetype = "dashed", color = "red") +
   geom_vline(xintercept = "2020-03-26", linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = "2020-04-13", linetype = "dashed", color = "green") +
   theme(axis.text.x = element_text(angle = 90), legend.title=element_blank()) +
   labs(title = "Evolución del COVID-19 en la Región de Murcia",
        subtitle = "Velocidad de expansión",
