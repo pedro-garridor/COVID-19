@@ -8,7 +8,7 @@ Hence, Rmd knitting gives the following items:
 * *Datos* folder: data files are downloaded here. These CSV files are gathered from [Datadista's GitHub](https://github.com/datadista/datasets/tree/master/COVID%2019), with information publised by the [Spanish Ministry of Health](https://www.mscbs.gob.es/profesionales/saludPublica/ccayes/alertasActual/nCov-China/situacionActual.htm) and [Carlos III Health Institute](https://covid19.isciii.es/).
 * *Graficas* folder: graphs from the HTML are exported to this folder, with 1920x1080 px resolution.
 
-> Global hospitalized data is available again as Madrid is giving cummulative results instead of prevalence. Preiously was nos reported as an inconsistency was spotted between cummulative data and prevalence depending on the reporting region.
+> Global hospitalized data is available again as Madrid is giving cummulative results instead of prevalence. Preiously was not reported as an inconsistency was spotted between cummulative data and prevalence depending on the reporting region.
 
 ---
 
