@@ -47,17 +47,51 @@ cd ..
 
 ```{r Introduccir los datos en R}
 casos <- read.csv("./Datos/ccaa_covid19_casos.csv", check.names = F)
+# Se consideran 0 los datos desconocidos del data set fuente
+casos[is.na(casos)] = 0
 # Se elimina la primera columna porque contiene el código de provincia y no es necesario
 casos <- casos[,2:ncol(casos)]
+# Calcular total (no proporcionado por el dataset de origen)
+casos[20,] <- (rep(0, ncol(casos)))
+casos[,1] <- as.factor(c(na.omit(as.character(casos$CCAA)), "Total"))
+for (i in 1:ncol(casos)){
+  if (i != 1) {
+    casos[20,i] <- sum(casos[,i])
+  }
+}
 
 hospitalizados <- read.csv("./Datos/ccaa_covid19_hospitalizados.csv", check.names = F)
+hospitalizados[is.na(hospitalizados)] = 0
 hospitalizados <- hospitalizados[,2:ncol(hospitalizados)]
+hospitalizados[20,] <- (rep(0, ncol(hospitalizados)))
+hospitalizados[,1] <- as.factor(c(na.omit(as.character(hospitalizados$CCAA)), "Total"))
+for (i in 1:ncol(hospitalizados)){
+  if (i != 1) {
+    hospitalizados[20,i] <- sum(hospitalizados[,i])
+  }
+}
 
 fallecidos <- read.csv("./Datos/ccaa_covid19_fallecidos.csv", check.names = F)
+fallecidos[is.na(fallecidos)] = 0
 fallecidos <- fallecidos[,2:ncol(fallecidos)]
+fallecidos[20,] <- (rep(0, ncol(fallecidos)))
+fallecidos[,1] <- as.factor(c(na.omit(as.character(fallecidos$CCAA)), "Total"))
+for (i in 1:ncol(fallecidos)){
+  if (i != 1) {
+    fallecidos[20,i] <- sum(fallecidos[,i])
+  }
+}
 
 altas <- read.csv("./Datos/ccaa_covid19_altas.csv", check.names = F)
+altas[is.na(altas)] = 0
 altas <- altas[,2:ncol(altas)]
+altas[20,] <- (rep(0, ncol(altas)))
+altas[,1] <- as.factor(c(na.omit(as.character(altas$CCAA)), "Total"))
+for (i in 1:ncol(altas)){
+  if (i != 1) {
+    altas[20,i] <- sum(altas[,i])
+  }
+}
 ```
 
 # Procesamiento de los datos
