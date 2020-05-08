@@ -49,9 +49,14 @@ cd ..
 casos <- read.csv("./Datos/ccaa_covid19_casos.csv", check.names = F)
 # Se consideran 0 los datos desconocidos del data set fuente
 casos[is.na(casos)] = 0
+
+#Se elimina la primera columna (nº ID CCAA)
+casos <- casos[,2:ncol(casos)]
+
 # Se reemplazan los códigos de provincia por sus nombres
-names(casos)[1] <- "CCAA"
-casos$CCAA <- c("Andalucía", "Aragón","Asturias", "Baleares", "Canarias", "Cantabria", "Castilla-La Mancha", "Castilla y León", "Cataluña", "Ceuta", "C. Valenciana", "Extremadura", "Galicia", "Madrid", "Melilla", "Murcia", "Navarra", "País Vasco", "La Rioja")
+# names(casos)[1] <- "CCAA"
+# casos$CCAA <- c("Andalucía", "Aragón","Asturias", "Baleares", "Canarias", "Cantabria", "Castilla-La Mancha", "Castilla y León", "Cataluña", "Ceuta", "C. Valenciana", "Extremadura", "Galicia", "Madrid", "Melilla", "Murcia", "Navarra", "País Vasco", "La Rioja")
+
 # Calcular total (no proporcionado por el dataset de origen)
 casos[20,] <- (rep(0, ncol(casos)))
 casos[,1] <- as.factor(c(na.omit(as.character(casos$CCAA[1:19])), "Total"))
