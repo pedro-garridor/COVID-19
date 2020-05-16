@@ -19,15 +19,15 @@ library(ggplot2); library(reshape2)
 
 # Obtención de los datos
 
-Para analizar la evolución del SARS-CoV-2 en España se obtiene información sobre casos positivos, hospitalizados, fallecidos y altas hospitalarias. Son datos diarios, agregados y desglosados por comunidad autónoma. Estos datos se obtienen del [GitHub de datadista](https://github.com/datadista/datasets/tree/master/COVID%2019) y proceden de los informes oficiales del [Ministerio de Sanidad](https://www.mscbs.gob.es/profesionales/saludPublica/ccayes/alertasActual/nCov-China/situacionActual.htm) y el [Instituto de Salud Carlos III](https://covid19.isciii.es/).
+Para analizar la evolución del SARS-CoV-2 en España se obtiene información sobre casos positivos, hospitalizados, fallecidos y altas hospitalarias. Son datos diarios, agregados y desglosados por comunidad autónoma. Estos datos se obtenían inicialmente del [GitHub de datadista](https://github.com/datadista/datasets/tree/master/COVID%2019). Los datos proceden ahora directamente de los informes oficiales del [Ministerio de Sanidad](https://www.mscbs.gob.es/profesionales/saludPublica/ccayes/alertasActual/nCov-China/situacionActual.htm) y el [Instituto de Salud Carlos III](https://covid19.isciii.es/).
 
-```{r Crear un directorio para almacenar los ficheros de datos}
+```{r Crear un directorio para almacenar los ficheros de datos, eval=F}
 if(dir.exists("Datos") == F) {
   dir.create("Datos")
 }
 ```
 
-```{bash Obtener los datos de GitHub, results=F}
+```{bash Obtener los datos de GitHub, results=F, eval=F}
 cd ./Datos/
 
 # Casos agregados
